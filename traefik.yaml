@@ -1,0 +1,63 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false  # true by default
+
+log:
+  level: DEBUG  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+accessLog: true
+
+api:
+  insecure: true  # Don't do this in production!
+
+entryPoints:
+  web:
+    address: :80
+    tls:
+      certResolver: dns-cloudflare
+
+  websecure:
+    address: :443
+    http:
+      tls: true
+
+http:
+  routers:
+    whoami:
+      entryPoints:
+        - web
+      rule: "Host(`sandbox.matthewdavis.io`)"
+      service: whoami
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+    hsts-header:
+      headers:
+        customResponseHeaders:
+          Strict-Transport-Security: max-age=63072000
+  services:
+    whoami:
+      loadBalancer:
+        servers:
+          - url: http://simple-service:80
+providers:
+  file:
+    directory: "/etc/traefik"
+
+tls:
+  certificates:
+    - certFile: /path/to/signed_cert_plus_intermediates
+      keyFile: /path/to/private_key
+  options:
+    modern:
+      minVersion: VersionTLS13
+
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: matthew@matthewdavis.io
+#      caServer = "https://acme-v02.api.letsencrypt.org/directory"
+      storage: /acme.json
+      httpChallenge:
+        entryPoint: web

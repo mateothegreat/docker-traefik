@@ -1,0 +1,39 @@
+version: "3.3"
+
+services:
+  traefik:
+    image: "traefik"
+    container_name: "traefik"
+    #    command:
+    #      - "--log.level=DEBUG"
+    #      - "--accesslog=true"
+    #      - "--api.insecure=true"
+    #      - "--providers.docker=true"
+    #      - "--providers.docker.exposedbydefault=true"
+    #      - "--entrypoints.web.address=:8080"
+    #      - "--entrypoints.websecure.address=:8443"
+    ports:
+      - "443:443"
+      - "8080:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik.yaml:/etc/traefik/traefik.yaml:ro"
+      - "./acme.json:/acme.json
+    networks:
+      - asdf
+
+  whoami:
+    image: "traefik/whoami"
+    container_name: "simple-service"
+    ports:
+      - "80"
+    networks:
+      - asdf
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.whoami.tls=true"
+#      - "traefik.http.routers.whoami.rule=Host(`test.com`)"
+#      - "traefik.http.routers.whoami.entrypoints=websecure"
+
+networks:
+  asdf:
