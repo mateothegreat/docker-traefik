@@ -7,51 +7,42 @@ log:
 
 accessLog: true
 
+providers:
+  file:
+    directory: "/etc/traefik"
+
 api:
   insecure: true  # Don't do this in production!
 
 entryPoints:
   web:
     address: :80
-    tls:
-      certResolver: dns-cloudflare
-
   websecure:
     address: :443
-    http:
-      tls: true
 
 http:
   routers:
     whoami:
+      rule: "Host(`sandbox.matthewdavis.io`) && Path(`/`)"
       entryPoints:
         - web
-      rule: "Host(`sandbox.matthewdavis.io`)"
       service: whoami
-  middlewares:
-    redirect-to-https:
-      redirectScheme:
-        scheme: https
-    hsts-header:
-      headers:
-        customResponseHeaders:
-          Strict-Transport-Security: max-age=63072000
+      tls:
+        certResolver: myresolver
+        domains:
+          - main: sandbox.matthewdavis.io
+      middlewares:
+        - redirect-to-https
   services:
     whoami:
       loadBalancer:
         servers:
-          - url: http://simple-service:80
-providers:
-  file:
-    directory: "/etc/traefik"
-
-tls:
-  certificates:
-    - certFile: /path/to/signed_cert_plus_intermediates
-      keyFile: /path/to/private_key
-  options:
-    modern:
-      minVersion: VersionTLS13
+          - url: http://whoami:8080
+  middlewares:
+    redirect-to-https:
+      redirectscheme:
+        scheme: websecure
+        permanent: true
 
 certificatesResolvers:
   myresolver:
@@ -59,5 +50,5 @@ certificatesResolvers:
       email: matthew@matthewdavis.io
 #      caServer = "https://acme-v02.api.letsencrypt.org/directory"
       storage: /acme.json
-      httpChallenge:
-        entryPoint: web
+      tlsChallenge: {}
+
