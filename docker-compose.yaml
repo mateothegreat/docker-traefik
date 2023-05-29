@@ -2,15 +2,19 @@ version: "3.3"
 
 services:
   traefik:
-    image: "traefik"
     container_name: "traefik"
+    image: "traefik"
+    entrypoint: "traefik"
+    command:
+      - "--configfile"
+      - "/traefik.yaml"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - type: "bind"
         source: "./traefik.yaml"
-        target: "/etc/traefik/traefik.yaml"
+        target: "/traefik.yaml"
       - type: "bind"
         source: "./acme.json"
         target: "/acme.json"

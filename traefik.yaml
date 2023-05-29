@@ -7,13 +7,6 @@ log:
 
 accessLog: true
 
-providers:
-  file:
-    directory: "/etc/traefik"
-
-api:
-  insecure: true  # Don't do this in production!
-
 entryPoints:
   web:
     address: :80
@@ -23,7 +16,7 @@ entryPoints:
 http:
   routers:
     whoami:
-      rule: "Host(`sandbox.matthewdavis.io`) && Path(`/`)"
+      rule: "Host(`sandbox.matthewdavis.io`)"
       entryPoints:
         - web
       service: whoami
@@ -37,11 +30,12 @@ http:
     whoami:
       loadBalancer:
         servers:
-          - url: http://whoami:8080
+          - address: http://127.0.0.1:8080
   middlewares:
     redirect-to-https:
       redirectscheme:
-        scheme: websecure
+        to: websecure
+        scheme: https
         permanent: true
 
 certificatesResolvers:
